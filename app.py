@@ -3,14 +3,8 @@
 import streamlit as st
 from rag import build_rag
 from mcq import generate_mcq
-
 st.set_page_config(page_title="RAG Assistant", layout="centered")
-
 st.title("📄 RAG Document Assistant")
-
-# -------------------------------
-# Session State Init
-# -------------------------------
 if "db" not in st.session_state:
     st.session_state.db = None
 if "retriever" not in st.session_state:
@@ -20,14 +14,11 @@ if "qa" not in st.session_state:
 if "file_name" not in st.session_state:
     st.session_state.file_name = None
 
-# -------------------------------
-# Upload PDF (FIXED)
-# -------------------------------
+
 uploaded_file = st.file_uploader("Upload PDF", type="pdf")
 
 if uploaded_file is not None:
 
-    # Only rebuild if new file uploaded
     if st.session_state.file_name != uploaded_file.name:
 
         with open("temp.pdf", "wb") as f:
@@ -43,17 +34,13 @@ if uploaded_file is not None:
 
         st.success("✅ PDF processed successfully!")
 
-# -------------------------------
-# Mode Selection
-# -------------------------------
+
 mode = st.selectbox(
     "Choose Mode",
     ["Ask Questions", "Generate MCQs (Page Range)"]
 )
 
-# -------------------------------
-# ASK QUESTIONS
-# -------------------------------
+
 if mode == "Ask Questions":
 
     query = st.text_input("Ask your question")
@@ -68,9 +55,7 @@ if mode == "Ask Questions":
             st.subheader("💬 Answer")
             st.write(answer)
 
-# -------------------------------
-# MCQ GENERATION (FIXED PROPERLY)
-# -------------------------------
+
 elif mode == "Generate MCQs (Page Range)":
 
     start_page = st.number_input("Start Page", min_value=1, value=1)
@@ -84,10 +69,9 @@ elif mode == "Generate MCQs (Page Range)":
             st.warning("⚠️ Upload PDF first")
 
         else:
-            # 🔥 Get ALL chunks
+          
             all_docs = st.session_state.db.docstore._dict.values()
 
-            # 🔥 Filter by page
             filtered_docs = [
                 d for d in all_docs
                 if start_page <= d.metadata.get("page", 0) + 1 <= end_page
@@ -97,7 +81,7 @@ elif mode == "Generate MCQs (Page Range)":
                 st.warning("No content found in this page range")
 
             else:
-                # Limit size to avoid overload
+               
                 limited_docs = filtered_docs[:10]
 
                 context = "\n\n".join([d.page_content for d in limited_docs])
